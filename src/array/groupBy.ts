@@ -1,34 +1,46 @@
+import { expectTypeOf } from 'vitest';
+
 type Key = string | number | boolean | null;
 
-export const groupBy = <T>(
+export const groupBy = <T, K extends Key>(
   arr: readonly T[],
-  prop: (v: T) => Key,
-): [Key, T[]][] => {
-  return groupBy_(arr, v => [prop(v)]).map(([k, v]) => [k[0], v]);
+  prop: (v: T) => K,
+): [K, T[]][] => {
+  return groupBy_(arr, v => [prop(v)]).map(([k, v]) => [k[0], v] as [K, T[]]);
 };
 
 if (import.meta.vitest) {
-  const { expect, test } = import.meta.vitest;
+  const { describe, expect, test } = import.meta.vitest;
 
-  test('groupBy', () => {
-    const xs = [5, 4, 4, 4, 4, 5, 5, 3];
-    expect(groupBy(xs, x => x)).toEqual([
-      [5, [5, 5, 5]],
-      [4, [4, 4, 4, 4]],
-      [3, [3]],
-    ]);
+  describe('groupBy', () => {
+    test('groupBy', () => {
+      const xs = [5, 4, 4, 4, 4, 5, 5, 3];
+      expect(groupBy(xs, x => x)).toEqual([
+        [5, [5, 5, 5]],
+        [4, [4, 4, 4, 4]],
+        [3, [3]],
+      ]);
+    });
+
+    test('type', () => {
+      const xs = [{ no: 1 }, { no: 1 }, { no: 1 }, { no: 1 }];
+      const result = groupBy(xs, x => x.no);
+      type Result = typeof result;
+      type Key = Result[0][0];
+      expectTypeOf<Key>().toEqualTypeOf<number>();
+    });
   });
 }
 
-export function groupBy_<T>(
+export function groupBy_<T, Tuple extends readonly Key[]>(
   arr: readonly T[],
-  prop: (v: T) => Key[],
-): [Key[], T[]][] {
+  prop: (v: T) => [...Tuple],
+): [Tuple, T[]][] {
   const map = new Map<string, T[]>();
 
   arr.forEach(item => {
     const key = prop(item);
-    const keyStr = JSON.stringify(key);
+    const keyStr = JSON.stringify(key)!;
     const items = map.get(keyStr);
 
     if (items == null) {
@@ -39,29 +51,39 @@ export function groupBy_<T>(
   });
 
   return Array.from(map.entries()).map(([keyStr, group]) => [
-    JSON.parse(keyStr) as Key[],
+    JSON.parse(keyStr) as unknown as Tuple,
     group,
   ]);
 }
 
 if (import.meta.vitest) {
-  const { expect, test } = import.meta.vitest;
+  const { describe, expect, test } = import.meta.vitest;
 
-  test('groupBy', () => {
+  describe('groupBy_', () => {
     const xs = [
       { a: '1', b: '2', c: '1' },
       { a: '1', b: '2', c: '2' },
       { a: '1', b: '3', c: '1' },
     ];
-    expect(groupBy_(xs, x => [x.a, x.b])).toEqual([
-      [
-        ['1', '2'],
+
+    test('groupBy_', () => {
+      expect(groupBy_(xs, x => [x.a, x.b])).toEqual([
         [
-          { a: '1', b: '2', c: '1' },
-          { a: '1', b: '2', c: '2' },
+          ['1', '2'],
+          [
+            { a: '1', b: '2', c: '1' },
+            { a: '1', b: '2', c: '2' },
+          ],
         ],
-      ],
-      [['1', '3'], [{ a: '1', b: '3', c: '1' }]],
-    ]);
+        [['1', '3'], [{ a: '1', b: '3', c: '1' }]],
+      ]);
+    });
+
+    test('type', () => {
+      const result = groupBy_(xs, x => [x.a, x.b]);
+      type Result = typeof result;
+      type Keys = Result[0][0];
+      expectTypeOf<Keys>().toEqualTypeOf<[string, string]>();
+    });
   });
 }
