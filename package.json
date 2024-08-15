@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "tsc": "node_modules/typescript/bin/tsc -p tsconfig.json",
+    "tsc": "node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
     "test": "vitest"
   },
   "prettier": {
