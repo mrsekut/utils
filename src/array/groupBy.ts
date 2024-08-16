@@ -1,5 +1,3 @@
-import { expectTypeOf } from 'vitest';
-
 type Key = string | number | boolean | null;
 
 export const groupBy = <T, K extends Key>(
@@ -10,7 +8,7 @@ export const groupBy = <T, K extends Key>(
 };
 
 if (import.meta.vitest) {
-  const { describe, expect, test } = import.meta.vitest;
+  const { describe, expect, test, expectTypeOf } = import.meta.vitest;
 
   describe('groupBy', () => {
     test('groupBy', () => {
@@ -57,7 +55,7 @@ export function groupBy_<T, Tuple extends readonly Key[]>(
 }
 
 if (import.meta.vitest) {
-  const { describe, expect, test } = import.meta.vitest;
+  const { describe, expect, test, expectTypeOf } = import.meta.vitest;
 
   describe('groupBy_', () => {
     const xs = [
