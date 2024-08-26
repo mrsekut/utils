@@ -3,6 +3,7 @@ export * from './difference';
 export * from './eq';
 export * from './groupBy';
 export * from './intersect';
+export * from './intersperse';
 export * from './partition';
 export * from './range';
 export * from './replicate';
